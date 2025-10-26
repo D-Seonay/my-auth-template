@@ -1,14 +1,53 @@
-version: "3.8"
+version: "3.9"
+
 services:
-  postgres:
-    image: postgres:15
+  mariadb:
+    image: mariadb:11
+    container_name: mariadb
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: authdb
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_USER: user
+      MARIADB_PASSWORD: password
+      MARIADB_DATABASE: authdb
     ports:
-      - "5432:5432"
+      - "3307:3306"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: mysql://user:password@mariadb:3306/authdb
+      JWT_SECRET: super_secret_jwt_key
+    command: >
+      sh -c "npx prisma migrate deploy &&
+             npm run start:dev"
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    environment:
+      - VITE_API_URL=http://localhost:3000
+
 volumes:
-  pgdata:
+  mariadb_data:
