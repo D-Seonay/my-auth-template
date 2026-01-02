@@ -7,6 +7,16 @@ import AuthLayout from '@/components/AuthLayout';
 import Input from '@/components/Input';
 import { Button } from '@/components/ui/button';
 
+import { useState, FormEvent } from 'react';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Loader2, Home } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import AuthLayout from '@/components/AuthLayout';
+import Input from '@/components/Input';
+import { Button } from '@/components/ui/button';
+import { SocialLoginButtons } from '@/components/SocialLoginButtons';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -96,6 +106,19 @@ const Login = () => {
             'Log in'
           )}
         </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <SocialLoginButtons />
 
         <div className="text-center text-sm text-card-foreground/70">
           Don't have an account?{' '}
