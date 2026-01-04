@@ -6,15 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import AuthLayout from '@/components/AuthLayout';
 import Input from '@/components/Input';
 import { Button } from '@/components/ui/button';
-
-import { useState, FormEvent } from 'react';
-import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Loader2, Home } from 'lucide-react';
-import { useAuth } from '@/context/AuthContext';
-import AuthLayout from '@/components/AuthLayout';
-import Input from '@/components/Input';
-import { Button } from '@/components/ui/button';
 import { SocialLoginButtons } from '@/components/SocialLoginButtons';
 
 const Login = () => {
