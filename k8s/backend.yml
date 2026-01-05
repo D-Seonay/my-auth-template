@@ -1,0 +1,62 @@
+# Note: Before applying this, you must build and push your backend Docker image
+# to a container registry (e.g., Docker Hub, GCR, ECR).
+# Then, replace 'your-docker-registry/your-backend-image:latest' with your image URI.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: your-docker-registry/your-backend-image:latest
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: backend-config
+        - secretRef:
+            name: backend-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000
+  type: ClusterIP
+---
+# Note: You need an Ingress Controller (like NGINX or Traefik) running in your cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-ingress
+  annotations:
+    # Use 'nginx.ingress.kubernetes.io/rewrite-target: /' for NGINX Ingress
+    # Check your Ingress Controller's documentation for specific annotations.
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 80
