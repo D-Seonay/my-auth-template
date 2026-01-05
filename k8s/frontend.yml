@@ -1,0 +1,58 @@
+# Note: Before applying this, you must build and push your frontend Docker image
+# to a container registry (e.g., Docker Hub, GCR, ECR).
+# Then, replace 'your-docker-registry/your-frontend-image:latest' with your image URI.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: your-docker-registry/your-frontend-image:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+---
+# Note: You need an Ingress Controller (like NGINX or Traefik) running in your cluster.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  annotations:
+    # Use 'nginx.ingress.kubernetes.io/rewrite-target: /' for NGINX Ingress
+    # Check your Ingress Controller's documentation for specific annotations.
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: <YOUR_DOMAIN> # e.g., my-auth-app.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend-service
+            port:
+              number: 80

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+data:
+  POSTGRES_DB: authdb
+  POSTGRES_USER: user
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  DATABASE_URL: "postgresql://user:<POSTGRES_PASSWORD>@postgres-service:5432/authdb?schema=public"
+  OAUTH_SUCCESS_REDIRECT_URL: "http://<YOUR_DOMAIN>/oauth/success"
+  # Note: The JWT_SECRET, GOOGLE_CLIENT_ID, and GOOGLE_CLIENT_SECRET are in backend-secret

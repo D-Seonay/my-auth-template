@@ -107,6 +107,82 @@ You can now register new users, log in with email/password, or use the "Continue
     -   `components/`: Reusable React components.
     -   `pages/`: React page components.
 -   `docker-compose.yml`: Defines the services, networks, and volumes for the Dockerized application.
+-   `k8s/`: Contains the Kubernetes configuration files.
+
+## Kubernetes Deployment
+
+To deploy this application to a Kubernetes cluster, follow these steps.
+
+### 1. Build and Push Docker Images
+
+Before deploying to Kubernetes, you need to build the Docker images for the frontend and backend and push them to a container registry (e.g., Docker Hub, Google Container Registry, Amazon ECR).
+
+-   **Backend Image**:
+    ```bash
+    docker build -t your-registry/your-backend-image:latest ./backend
+    docker push your-registry/your-backend-image:latest
+    ```
+
+-   **Frontend Image**:
+    ```bash
+    docker build -t your-registry/your-frontend-image:latest ./frontend
+    docker push your-registry/your-frontend-image:latest
+    ```
+    Replace `your-registry/your-backend-image:latest` and `your-registry/your-frontend-image:latest` with your actual image names.
+
+### 2. Configure Kubernetes Secrets
+
+The Kubernetes configuration uses secrets to manage sensitive information. You need to provide these secrets before deploying.
+
+1.  **Encode Your Secrets**:
+    The `k8s/secrets.yml` file requires base64 encoded values. You can encode your secrets using the following command:
+    ```bash
+    echo -n 'your-secret-value' | base64
+    ```
+    You will need to do this for:
+    -   PostgreSQL password
+    -   JWT secret
+    -   Google Client ID
+    -   Google Client Secret
+
+2.  **Update `k8s/secrets.yml`**:
+    Replace the placeholder values in `k8s/secrets.yml` with your base64 encoded secrets.
+
+### 3. Update Configuration Files
+
+-   **Image Names**:
+    -   In `k8s/backend.yml`, replace `your-docker-registry/your-backend-image:latest` with your backend image URI.
+    -   In `k8s/frontend.yml`, replace `your-docker-registry/your-frontend-image:latest` with your frontend image URI.
+
+-   **Domain Name**:
+    -   In `k8s/frontend.yml`, replace `<YOUR_DOMAIN>` in the `Ingress` resource with the domain you will use to access the application.
+    -   In `k8s/configmaps.yml`, replace `<YOUR_DOMAIN>` in the `OAUTH_SUCCESS_REDIRECT_URL`.
+
+### 4. Deploy to Kubernetes
+
+Once you have configured your images and secrets, you can deploy the application using `kubectl`.
+
+```bash
+kubectl apply -k k8s/
+```
+
+This command will:
+-   Create all the necessary Kubernetes resources defined in the `k8s` directory.
+-   Deploy the PostgreSQL database, backend, and frontend to your cluster.
+
+### 5. Accessing the Application
+
+After the deployment is complete and the pods are running, you can access your application at the domain you configured in the frontend `Ingress` resource.
+
+To check the status of your pods, you can run:
+```bash
+kubectl get pods
+```
+
+To view the logs of a specific pod:
+```bash
+kubectl logs <pod-name>
+```
 
 ## Contributing
 
